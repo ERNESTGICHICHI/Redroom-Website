@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Red Room — Nairobi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- Lenis smooth scroll -->
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black:    #070507;
+      --deep:     #120008;
+      --red:      #9b0000;
+      --crimson:  #c8102e;
+      --gold:     #c9a227;
+      --gold-lt:  #e8c96a;
+      --white:    #f5f0eb;
+      --muted:    #8a7a6e;
+      --bg:       #0d0204;
+    }
+
+    html { scroll-behavior: auto; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--crimson); }
+
+    /* ── CURSOR ── */
+    #cursor-dot {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 8px; height: 8px;
+      background: var(--crimson); border-radius: 50%;
+      pointer-events: none; transform: translate(-50%,-50%);
+      transition: transform .08s;
+    }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 40px; height: 40px;
+      border: 1px solid rgba(200,16,46,.5);
+      border-radius: 50%; pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: width .35s, height .35s, border-color .35s, background .35s;
+    }
+    body:has(a:hover) #cursor-ring,
+    body:has(button:hover) #cursor-ring {
+      width: 64px; height: 64px;
+      border-color: var(--gold);
+      background: rgba(200,16,46,.06);
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      position: fixed; inset: 0; z-index: 99999;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 24px;
+    }
+    .loader-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; letter-spacing: .14em; text-transform: uppercase;
+      overflow: hidden;
+    }
+    .loader-logo span { display: inline-block; }
+    .loader-logo .red { color: var(--crimson); font-style: italic; }
+    .loader-bar-wrap { width: 200px; height: 1px; background: rgba(245,240,235,.1); overflow: hidden; }
+    .loader-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--crimson), var(--gold)); }
+    .loader-count { font-size: .72rem; letter-spacing: .3em; color: var(--muted); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 888;
+      padding: 28px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav::after {
+      content: ''; position: absolute; inset: 0; bottom: -1px;
+      background: linear-gradient(var(--black), transparent);
+      pointer-events: none; opacity: 0; transition: opacity .4s;
+    }
+    nav.scrolled::after { opacity: 1; }
+    nav.scrolled { backdrop-filter: blur(20px); background: rgba(7,5,7,.88); padding: 18px 60px; }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--white); text-decoration: none;
+      opacity: 0;
+    }
+    .nav-logo strong { color: var(--crimson); font-weight: 700; }
+    .nav-links { display: flex; gap: 40px; list-style: none; opacity: 0; }
+    .nav-links a {
+      color: rgba(245,240,235,.7); text-decoration: none;
+      font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 500;
+      position: relative; transition: color .25s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 1px; background: var(--crimson);
+      transform: scaleX(0); transition: transform .3s; transform-origin: right;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
+    .nav-cta {
+      background: var(--crimson) !important; color: var(--white) !important;
+      padding: 10px 22px; letter-spacing: .14em !important;
+      clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+    }
+    .nav-cta::after { display: none !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; }
+    .hamburger span { display: block; width: 22px; height: 1px; background: var(--white); transition: .3s; }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative; height: 100vh; min-height: 700px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Slideshow */
+    /* Video hero background */
+    .hero-video {
+      position: absolute; inset: 0; z-index: 0;
+      width: 100%; height: 100%; object-fit: cover;
+      filter: brightness(.55) saturate(1.1);
+    }
+    .hero-video::after { content: ''; position: absolute; inset: 0; }
+
+    .hero-slides { position: absolute; inset: 0; z-index: 0; }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transform: scale(1.06);
+      transition: opacity 1.4s cubic-bezier(.4,0,.2,1), transform 8s ease;
+    }
+    .hero-slide.active { opacity: 1; transform: scale(1); }
+    .hero-slide::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(7,5,7,.82) 0%, rgba(7,5,7,.35) 50%, rgba(7,5,7,.5) 100%),
+                  linear-gradient(to top, rgba(7,5,7,.9) 0%, transparent 50%);
+    }
+
+    /* Noise texture */
+    .hero-noise {
+      position: absolute; inset: 0; z-index: 1; opacity: .03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative; z-index: 4; padding: 0 60px; max-width: 900px;
+    }
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: 14px;
+      font-size: .68rem; letter-spacing: .46em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 28px; overflow: hidden;
+    }
+    .hero-eyebrow-line { flex-shrink: 0; width: 0; height: 1px; background: var(--gold); }
+    .hero-eyebrow span { display: block; transform: translateY(30px); }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(4rem, 10vw, 8.5rem);
+      line-height: .9; font-weight: 700;
+    }
+    .hero-title .word { display: inline-block; overflow: hidden; }
+    .hero-title .word span { display: block; transform: translateY(110%); }
+    .hero-title .t2 { color: var(--crimson); font-style: italic; display: block; }
+    .hero-title .t2 .word span { text-shadow: 0 0 120px rgba(200,16,46,.6); }
+
+    .hero-body {
+      margin-top: 32px; max-width: 420px;
+      font-size: .88rem; letter-spacing: .06em; line-height: 1.9;
+      color: rgba(245,240,235,.55); text-transform: uppercase;
+      overflow: hidden;
+    }
+    .hero-body span { display: block; transform: translateY(100%); }
+
+    .hero-actions {
+      margin-top: 52px; display: flex; gap: 16px; flex-wrap: wrap; opacity: 0; transform: translateY(20px);
+    }
+    .btn-primary {
+      background: var(--crimson); color: var(--white);
+      padding: 18px 44px; border: none; cursor: none;
+      font-family: 'Inter', sans-serif; font-size: .76rem;
+      letter-spacing: .24em; text-transform: uppercase; font-weight: 600;
+      text-decoration: none; display: inline-block;
+      clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+      position: relative; overflow: hidden; transition: background .2s;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,.12); transform: translateX(-110%) skewX(-20deg);
+      transition: transform .5s;
+    }
+    .btn-primary:hover::before { transform: translateX(110%) skewX(-20deg); }
+    .btn-primary:hover { background: #a8001f; }
+    .btn-outline {
+      background: transparent; color: var(--white);
+      padding: 18px 44px; border: 1px solid rgba(245,240,235,.25); cursor: none;
+      font-family: 'Inter', sans-serif; font-size: .76rem;
+      letter-spacing: .24em; text-transform: uppercase; font-weight: 500;
+      text-decoration: none; display: inline-block;
+      transition: border-color .25s, color .25s;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Slide counter */
+    .hero-counter {
+      position: absolute; right: 60px; bottom: 60px; z-index: 4;
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'Playfair Display', serif; font-size: .88rem; color: rgba(245,240,235,.4);
+    }
+    .hero-counter .current { color: var(--white); font-size: 1.3rem; }
+    .hero-counter-line { width: 40px; height: 1px; background: rgba(245,240,235,.2); position: relative; overflow: hidden; }
+    .hero-counter-prog { position: absolute; top: 0; left: 0; height: 100%; background: var(--crimson); width: 0%; }
+
+    .hero-scroll {
+      position: absolute; bottom: 40px; left: 60px; z-index: 4;
+      display: flex; align-items: center; gap: 12px; opacity: 0;
+    }
+    .scroll-line { width: 60px; height: 1px; background: rgba(245,240,235,.2); position: relative; overflow: hidden; }
+    .scroll-line::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: var(--crimson); animation: scrollSlide 2s ease infinite;
+    }
+    @keyframes scrollSlide { 0%{left:-100%} 100%{left:100%} }
+    .hero-scroll span { font-size: .65rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(245,240,235,.4); }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      border-top: 1px solid rgba(200,16,46,.15);
+      border-bottom: 1px solid rgba(200,16,46,.15);
+      padding: 16px 0; background: rgba(155,0,0,.05); overflow: hidden;
+    }
+    .marquee-track { display: flex; gap: 0; white-space: nowrap; animation: marquee 24s linear infinite; }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .marquee-item {
+      display: inline-flex; align-items: center; gap: 24px; padding: 0 24px;
+      font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+    }
+    .marquee-item .dot { color: var(--crimson); }
+
+    /* ── SECTION ── */
+    section { padding: 130px 60px; }
+    .section-label {
+      font-size: .66rem; letter-spacing: .44em; text-transform: uppercase;
+      color: var(--crimson); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::before { content:''; display:block; width:24px; height:1px; background:var(--crimson); }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      line-height: 1.02; font-weight: 700;
+    }
+    .section-title em { color: var(--crimson); font-style: italic; }
+    .divider { width: 60px; height: 2px; background: linear-gradient(90deg, var(--crimson), var(--gold)); margin: 24px 0 52px; }
+
+    /* ── ABOUT ── */
+    #about {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center;
+    }
+    .about-visual { position: relative; aspect-ratio: 4/5; }
+    .about-img-main {
+      width: 100%; height: 100%;
+      background: url('images/rr1.jpg') center/cover;
+      box-shadow: 0 40px 100px rgba(0,0,0,.7);
+      will-change: transform;
+    }
+    .about-img-accent {
+      position: absolute; bottom: -36px; right: -36px;
+      width: 52%; aspect-ratio: 3/4;
+      background: url('images/rr4.jpg') center/cover;
+      border: 2px solid rgba(200,16,46,.25);
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+      will-change: transform;
+    }
+    .about-img-main::after,
+    .about-img-accent::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(155,0,0,.2) 0%, transparent 60%);
+    }
+    .about-tag {
+      position: absolute; top: 32px; left: -24px;
+      background: var(--crimson); padding: 14px 22px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic; letter-spacing: .06em;
+      box-shadow: 0 8px 40px rgba(200,16,46,.35); z-index: 2;
+    }
+    .about-text p { color: rgba(245,240,235,.6); line-height: 1.95; font-size: .9rem; margin-bottom: 18px; }
+    .about-stats { display: flex; gap: 48px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(245,240,235,.07); }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--crimson); line-height: 1; }
+    .stat-label { font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+
+    /* ── EXPERIENCE ── */
+    #experience { background: var(--bg); }
+    .experience-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 64px; }
+    .exp-card {
+      padding: 50px 40px; background: rgba(245,240,235,.025);
+      border: 1px solid rgba(245,240,235,.05);
+      position: relative; overflow: hidden; will-change: transform;
+    }
+    .exp-card-bg {
+      position: absolute; inset: 0;
+      background: rgba(155,0,0,.07); opacity: 0; transition: opacity .4s;
+    }
+    .exp-card:hover .exp-card-bg { opacity: 1; }
+    .exp-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, var(--crimson), var(--gold));
+      transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.4,0,.2,1);
+    }
+    .exp-card:hover::after { transform: scaleX(1); }
+    .exp-icon { font-size: 2.2rem; margin-bottom: 24px; position: relative; }
+    .exp-title { font-family: 'Playfair Display', serif; font-size: 1.28rem; margin-bottom: 14px; font-weight: 600; position: relative; }
+    .exp-desc { color: rgba(245,240,235,.5); font-size: .85rem; line-height: 1.85; position: relative; }
+
+    /* ── EVENTS ── */
+    #events { }
+    .events-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; flex-wrap: wrap; gap: 24px; }
+    .events-list { display: flex; flex-direction: column; gap: 2px; }
+    .event-row {
+      display: grid; grid-template-columns: 100px 1fr auto auto;
+      align-items: center; gap: 40px; padding: 30px 40px;
+      background: rgba(245,240,235,.02); border: 1px solid rgba(245,240,235,.04);
+      transition: background .35s, border-color .35s; will-change: transform;
+    }
+    .event-row:hover { background: rgba(155,0,0,.06); border-color: rgba(200,16,46,.18); }
+    .event-day { font-family: 'Playfair Display', serif; font-size: 2.6rem; color: var(--crimson); line-height: 1; }
+    .event-month { font-size: .66rem; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+    .event-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; }
+    .event-meta { font-size: .76rem; letter-spacing: .08em; color: var(--muted); }
+    .event-tag {
+      background: rgba(200,16,46,.12); color: var(--crimson);
+      border: 1px solid rgba(200,16,46,.28);
+      padding: 6px 14px; font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap;
+    }
+    .event-tag.sold { background: rgba(201,162,39,.08); color: var(--gold); border-color: rgba(201,162,39,.25); }
+    .event-tag.vip { background: rgba(201,162,39,.08); color: var(--gold-lt); border-color: rgba(201,162,39,.25); }
+    .event-btn {
+      background: var(--crimson); color: var(--white);
+      padding: 12px 26px; border: none; cursor: none;
+      font-family: 'Inter', sans-serif; font-size: .7rem;
+      letter-spacing: .18em; text-transform: uppercase; font-weight: 600;
+      text-decoration: none; white-space: nowrap; transition: background .2s; display: inline-block;
+    }
+    .event-btn:hover { background: #a8001f; }
+    .event-btn.outline {
+      background: transparent; border: 1px solid rgba(245,240,235,.2);
+      transition: border-color .2s, color .2s;
+    }
+    .event-btn.outline:hover { border-color: var(--gold); color: var(--gold); background: transparent; }
+
+    /* ── GALLERY ── */
+    #gallery { background: var(--bg); padding-bottom: 0; }
+    .gallery-intro { text-align: center; margin-bottom: 64px; }
+    .gallery-intro .section-label { justify-content: center; }
+    .gallery-intro .divider { margin: 24px auto 0; }
+
+    /* Masonry grid */
+    .masonry {
+      columns: 3; column-gap: 4px;
+      padding: 0 0 4px;
+    }
+    .masonry-item {
+      break-inside: avoid; margin-bottom: 4px;
+      position: relative; overflow: hidden; cursor: none;
+      display: block;
+    }
+    .masonry-item img {
+      width: 100%; display: block;
+      filter: saturate(.7) brightness(.85);
+      transition: filter .5s, transform .6s cubic-bezier(.4,0,.2,1);
+      transform: scale(1.02);
+    }
+    .masonry-item:hover img { filter: saturate(1) brightness(1); transform: scale(1.08); }
+    .masonry-item-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(155,0,0,.8) 0%, transparent 50%);
+      opacity: 0; transition: opacity .4s; display: flex; align-items: flex-end;
+      padding: 20px;
+    }
+    .masonry-item:hover .masonry-item-overlay { opacity: 1; }
+    .masonry-item-num {
+      font-family: 'Playfair Display', serif; font-size: .9rem;
+      color: rgba(245,240,235,.7); font-style: italic;
+    }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      position: fixed; inset: 0; z-index: 9990;
+      background: rgba(7,5,7,.97);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .35s;
+    }
+    #lightbox.open { opacity: 1; pointer-events: all; }
+    #lightbox img {
+      max-width: 90vw; max-height: 90vh; object-fit: contain;
+      box-shadow: 0 0 120px rgba(0,0,0,.8);
+      transform: scale(.9); transition: transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    #lightbox.open img { transform: scale(1); }
+    .lb-close {
+      position: absolute; top: 28px; right: 36px;
+      font-size: 1.8rem; color: rgba(245,240,235,.6); cursor: none;
+      line-height: 1; transition: color .2s; user-select: none;
+    }
+    .lb-close:hover { color: var(--crimson); }
+    .lb-prev, .lb-next {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: 2rem; color: rgba(245,240,235,.4); cursor: none;
+      padding: 20px; transition: color .2s; user-select: none;
+    }
+    .lb-prev { left: 20px; }
+    .lb-next { right: 20px; }
+    .lb-prev:hover, .lb-next:hover { color: var(--crimson); }
+    .lb-counter {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      font-family: 'Playfair Display', serif; font-size: .88rem;
+      color: rgba(245,240,235,.35); letter-spacing: .1em;
+    }
+
+    /* ── RESERVATIONS ── */
+    #reservations { }
+    .res-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+    .res-text p { color: rgba(245,240,235,.58); line-height: 1.95; font-size: .9rem; margin-bottom: 16px; }
+    .packages { display: flex; flex-direction: column; gap: 2px; margin-top: 40px; }
+    .pkg {
+      padding: 22px 30px; background: rgba(245,240,235,.02); border: 1px solid rgba(245,240,235,.05);
+      display: flex; justify-content: space-between; align-items: center; transition: .35s; will-change: transform;
+    }
+    .pkg:hover { background: rgba(155,0,0,.07); border-color: rgba(200,16,46,.18); transform: translateX(6px); }
+    .pkg-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; }
+    .pkg-desc { font-size: .76rem; color: var(--muted); margin-top: 4px; }
+    .pkg-price { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gold); white-space: nowrap; }
+    .res-form { background: rgba(245,240,235,.025); border: 1px solid rgba(245,240,235,.06); padding: 48px; }
+    .form-title { font-family: 'Playfair Display', serif; font-size: 1.55rem; margin-bottom: 6px; }
+    .form-sub { font-size: .78rem; color: var(--muted); margin-bottom: 36px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    .form-group label { font-size: .65rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      background: rgba(245,240,235,.04); border: 1px solid rgba(245,240,235,.07);
+      color: var(--white); padding: 13px 15px;
+      font-family: 'Inter', sans-serif; font-size: .87rem; outline: none;
+      transition: border-color .25s; -webkit-appearance: none; cursor: none;
+    }
+    .form-group select option { background: #1a0005; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: rgba(200,16,46,.45); }
+    .form-group textarea { resize: vertical; min-height: 96px; }
+    .form-submit {
+      width: 100%; background: var(--crimson); color: var(--white);
+      border: none; padding: 18px; cursor: none;
+      font-family: 'Inter', sans-serif; font-size: .78rem;
+      letter-spacing: .24em; text-transform: uppercase; font-weight: 600;
+      transition: background .2s; margin-top: 6px; position: relative; overflow: hidden;
+    }
+    .form-submit::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,.1); transform: translateX(-110%) skewX(-20deg); transition: transform .5s;
+    }
+    .form-submit:hover::before { transform: translateX(110%) skewX(-20deg); }
+    .form-submit:hover { background: #a8001f; }
+
+    /* ── PARALLAX FEATURE ── */
+    #feature {
+      position: relative; height: 70vh; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feature-bg {
+      position: absolute; inset: -20%;
+      background: url('images/rr6.jpg') center/cover;
+      will-change: transform;
+    }
+    .feature-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(7,5,7,.85), rgba(7,5,7,.55), rgba(7,5,7,.85));
+    }
+    .feature-content {
+      position: relative; z-index: 2; text-align: center; padding: 0 60px;
+    }
+    .feature-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 4vw, 3rem);
+      font-style: italic; line-height: 1.35; max-width: 800px; margin: 0 auto;
+    }
+    .feature-quote::before { content: '\201C'; color: var(--crimson); }
+    .feature-quote::after { content: '\201D'; color: var(--crimson); }
+    .feature-attr { margin-top: 24px; font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+
+    /* ── DRESS CODE ── */
+    #dresscode { background: var(--deep); text-align: center; }
+    .dress-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; margin-top: 64px; }
+    .dress-card { padding: 48px 32px; background: rgba(0,0,0,.3); border: 1px solid rgba(200,16,46,.08); will-change: transform; }
+    .dress-icon { font-size: 2.2rem; margin-bottom: 20px; }
+    .dress-title { font-family: 'Playfair Display', serif; font-size: 1.08rem; margin-bottom: 10px; color: var(--gold); }
+    .dress-desc { font-size: .82rem; color: rgba(245,240,235,.5); line-height: 1.8; }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--bg); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 64px; }
+    .testimonial {
+      padding: 40px; background: rgba(245,240,235,.02);
+      border: 1px solid rgba(245,240,235,.05); position: relative; will-change: transform;
+    }
+    .testimonial::before {
+      content:'\201C'; font-family:'Playfair Display',serif; font-size:5rem;
+      color: rgba(200,16,46,.15); line-height:.5;
+      position: absolute; top: 24px; left: 28px;
+    }
+    .stars { color: var(--gold); margin-bottom: 20px; letter-spacing: 2px; }
+    .testimonial-text { font-size: .88rem; line-height: 1.9; color: rgba(245,240,235,.65); margin-bottom: 28px; }
+    .author-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--crimson), var(--deep));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.05rem;
+    }
+    .author-name { font-size: .87rem; font-weight: 600; }
+    .author-title { font-size: .7rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── INFO ── */
+    #info {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      border-top: 1px solid rgba(200,16,46,.12);
+      border-bottom: 1px solid rgba(200,16,46,.12);
+      padding: 0 60px;
+    }
+    .info-cell {
+      padding: 56px 40px; border-right: 1px solid rgba(245,240,235,.05);
+      display: flex; gap: 18px; align-items: flex-start;
+    }
+    .info-cell:first-child { padding-left: 0; }
+    .info-cell:last-child { border-right: none; }
+    .info-icon { color: var(--crimson); font-size: 1.4rem; flex-shrink: 0; margin-top: 3px; }
+    .info-label { font-size: .65rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .info-value { font-family: 'Playfair Display', serif; font-size: .97rem; line-height: 1.5; }
+    .info-sub { font-size: .76rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── FOOTER ── */
+    footer { background: rgba(0,0,0,.75); padding: 80px 60px 40px; border-top: 1px solid rgba(200,16,46,.12); }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; margin-bottom: 60px; }
+    .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold); letter-spacing: .1em; }
+    .footer-logo strong { color: var(--crimson); }
+    .footer-brand p { margin-top: 14px; font-size: .83rem; color: var(--muted); line-height: 1.85; max-width: 280px; }
+    .footer-social { display: flex; gap: 12px; margin-top: 28px; }
+    .soc-link {
+      width: 38px; height: 38px; border: 1px solid rgba(245,240,235,.1);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-decoration: none; font-size: .8rem;
+      transition: .25s;
+    }
+    .soc-link:hover { border-color: var(--crimson); color: var(--white); background: rgba(200,16,46,.12); }
+    .footer-col h4 { font-size: .66rem; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul a { color: var(--muted); text-decoration: none; font-size: .83rem; transition: color .2s; }
+    .footer-col ul a:hover { color: var(--white); }
+    .footer-bottom { border-top: 1px solid rgba(245,240,235,.05); padding-top: 28px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-bottom p { font-size: .74rem; color: rgba(138,122,110,.55); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 960px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; flex-direction: column; position: fixed; inset: 0; background: rgba(7,5,7,.98); align-items: center; justify-content: center; gap: 32px; z-index: 887; }
+      .nav-links.open { display: flex; }
+      .nav-links a { font-size: 1.1rem; }
+      .hamburger { display: flex; }
+      section, #info, footer { padding: 80px 24px; }
+      .hero-content { padding: 0 24px; }
+      #about { grid-template-columns: 1fr; gap: 60px; }
+      .about-img-accent { display: none; }
+      .experience-grid { grid-template-columns: 1fr; }
+      .event-row { grid-template-columns: 70px 1fr; grid-template-rows: auto auto; gap: 12px; padding: 20px 24px; }
+      .event-tag, .event-btn { grid-column: 2; }
+      .masonry { columns: 2; }
+      .res-wrap { grid-template-columns: 1fr; gap: 48px; }
+      .res-form { padding: 28px 20px; }
+      .form-row { grid-template-columns: 1fr; }
+      .dress-grid { grid-template-columns: repeat(2,1fr); }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      #info { grid-template-columns: 1fr 1fr; padding: 0 24px; }
+      .info-cell:nth-child(2) { border-right: none; }
+      .info-cell:nth-child(3) { border-right: 1px solid rgba(245,240,235,.05); }
+      .footer-top { grid-template-columns: 1fr; gap: 32px; }
+      .hero-scroll, .hero-counter { display: none; }
+      body { cursor: auto; }
+      #cursor-dot, #cursor-ring { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-logo">
+    <span>The&nbsp;</span><span class="red">Red</span><span>&nbsp;Room</span>
+  </div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
+  <div class="loader-count" id="loaderCount">0%</div>
+</div>
+
+<!-- Nav -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">The <strong>Red</strong> Room</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">About</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#reservations">Reservations</a></li>
+    <li><a href="#reservations" class="nav-cta">Book a Table</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <!-- Video background — plays first, slides show if video can't load -->
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="images/rr1.jpg">
+    <source src="images/redroom.mp4" type="video/mp4" />
+  </video>
+
+  <div class="hero-slides" id="heroSlides" style="opacity:0">
+    <div class="hero-slide active" style="background-image:url('images/rr1.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('images/rr3.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('images/rr5.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('images/rr7.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('images/rr9.jpg')"></div>
+  </div>
+  <div class="hero-noise"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-line" id="eyebrowLine"></div>
+      <span id="eyebrowText">Nairobi's Premier Nightlife Experience</span>
+    </div>
+    <h1 class="hero-title" id="heroTitle">
+      <div class="word"><span>Enter</span></div>
+      <div class="word"><span>The</span></div>
+      <div class="t2">
+        <div class="word"><span>Red</span></div>
+        <div class="word"><span>Room</span></div>
+      </div>
+    </h1>
+    <div class="hero-body"><span id="heroBody">Where the night comes alive &mdash; live performances, craft cocktails &amp; unmatched energy</span></div>
+    <div class="hero-actions" id="heroActions">
+      <a href="#reservations" class="btn-primary">Reserve Your Table</a>
+      <a href="#events" class="btn-outline">View Events</a>
+    </div>
+  </div>
+  <div class="hero-counter" id="heroCounter">
+    <span class="current" id="slideNum">01</span>
+    <div class="hero-counter-line"><div class="hero-counter-prog" id="slideProgress"></div></div>
+    <span>05</span>
+  </div>
+  <div class="hero-scroll" id="heroScroll">
+    <div class="scroll-line"></div>
+    <span>Scroll to Explore</span>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Live Performances <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Craft Cocktails <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Exclusive Events <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">VIP Table Service <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Nairobi&apos;s Finest <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Friday &amp; Saturday Nights <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">The Experience <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Live Performances <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Craft Cocktails <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Exclusive Events <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">VIP Table Service <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Nairobi&apos;s Finest <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">Friday &amp; Saturday Nights <span class="dot">&#9670;</span></span>
+    <span class="marquee-item">The Experience <span class="dot">&#9670;</span></span>
+  </div>
+</div>
+
+<!-- About -->
+<section id="about">
+  <div class="about-visual" data-parallax>
+    <div class="about-img-main" id="aboutMain"></div>
+    <div class="about-img-accent" id="aboutAccent"></div>
+    <div class="about-tag">Est. Nairobi</div>
+  </div>
+  <div class="about-text">
+    <div class="section-label" data-reveal>Our Story</div>
+    <h2 class="section-title" data-split>More Than a<br /><em>Nightclub</em></h2>
+    <div class="divider" data-reveal></div>
+    <p data-reveal>The Red Room is Nairobi's most intimate and electric nightlife destination. Born from a passion for world-class entertainment and curated experiences, we've created a space where music, art, and culture collide.</p>
+    <p data-reveal>Every night is carefully orchestrated — from hand-selected resident DJs spinning Afrobeats, Amapiano, and international sounds, to live performances by homegrown talent and international headliners.</p>
+    <p data-reveal>Our cocktail program is built by expert mixologists who treat each drink as a statement. The ambiance is designed to feel exclusive yet electric, intimate yet alive.</p>
+    <div class="about-stats" data-reveal>
+      <div><div class="stat-num" data-count="250">0</div><div class="stat-label">Events Hosted</div></div>
+      <div><div class="stat-num" data-count="50">0</div><div class="stat-label">K+ Guests</div></div>
+      <div><div class="stat-num" data-count="3">0</div><div class="stat-label">Years Running</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Experience -->
+<section id="experience">
+  <div data-reveal style="max-width:560px">
+    <div class="section-label">What We Offer</div>
+    <h2 class="section-title">The <em>Red Room</em><br />Experience</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="experience-grid">
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">🎵</div>
+      <div class="exp-title">Live Performances</div>
+      <div class="exp-desc">World-class artists and Nairobi's hottest acts take the stage every weekend. From Afrobeats to R&amp;B, every night is an unforgettable sonic journey.</div>
+    </div>
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">🍸</div>
+      <div class="exp-title">Signature Cocktails</div>
+      <div class="exp-desc">Our award-winning mixologists craft drinks as bold as the atmosphere. Discover flavours that define the night — from the iconic Red Room Martini to bespoke creations.</div>
+    </div>
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">💎</div>
+      <div class="exp-title">VIP Table Service</div>
+      <div class="exp-desc">Command your corner of the room. Priority entry, dedicated hosts, premium bottle selections, and a night designed entirely around you.</div>
+    </div>
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">🎧</div>
+      <div class="exp-title">Resident DJs</div>
+      <div class="exp-desc">Our handpicked resident DJs read the room like no other. Seamless sets that build from opening hour to an euphoric peak — every single night.</div>
+    </div>
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">🏛️</div>
+      <div class="exp-title">Private Events</div>
+      <div class="exp-desc">Birthday celebrations, brand activations, corporate events. The Red Room transforms for your occasion — fully branded, fully staffed, fully legendary.</div>
+    </div>
+    <div class="exp-card" data-card>
+      <div class="exp-card-bg"></div>
+      <div class="exp-icon">✨</div>
+      <div class="exp-title">Curated Atmosphere</div>
+      <div class="exp-desc">From the lighting rigs to the velvet booths, every detail is intentional. The Red Room is a sensory experience designed to make every moment feel cinematic.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Events -->
+<section id="events">
+  <div class="events-header">
+    <div data-reveal>
+      <div class="section-label">What&apos;s On</div>
+      <h2 class="section-title">Upcoming <em>Events</em></h2>
+      <div class="divider" style="margin-bottom:0"></div>
+    </div>
+    <a href="#" class="btn-outline" data-reveal>View All Events</a>
+  </div>
+  <div class="events-list">
+    <div class="event-row" data-reveal>
+      <div><div class="event-day">14</div><div class="event-month">Jun</div></div>
+      <div><div class="event-name">Red Room Fridays — Vol. 28</div><div class="event-meta">10:00 PM &nbsp;·&nbsp; DJ Khali &amp; Special Guest &nbsp;·&nbsp; Doors from 9PM</div></div>
+      <div class="event-tag">Limited</div>
+      <a href="#reservations" class="event-btn">Buy Tickets</a>
+    </div>
+    <div class="event-row" data-reveal>
+      <div><div class="event-day">20</div><div class="event-month">Jun</div></div>
+      <div><div class="event-name">All White Affair — Summer Edition</div><div class="event-meta">9:00 PM &nbsp;·&nbsp; Dress Code: All White &nbsp;·&nbsp; Live Band + DJ</div></div>
+      <div class="event-tag">Featured</div>
+      <a href="#reservations" class="event-btn">Buy Tickets</a>
+    </div>
+    <div class="event-row" data-reveal>
+      <div><div class="event-day">21</div><div class="event-month">Jun</div></div>
+      <div><div class="event-name">Amapiano Sunday Session</div><div class="event-meta">6:00 PM &nbsp;·&nbsp; DJ Leeroy &amp; Friends &nbsp;·&nbsp; Sundowner Vibes</div></div>
+      <div class="event-tag sold">Sold Out</div>
+      <a href="#" class="event-btn outline">Waitlist</a>
+    </div>
+    <div class="event-row" data-reveal>
+      <div><div class="event-day">28</div><div class="event-month">Jun</div></div>
+      <div><div class="event-name">Red Room Anniversary Night</div><div class="event-meta">10:00 PM &nbsp;·&nbsp; Surprise Headliner &nbsp;·&nbsp; 3 Years of The Experience</div></div>
+      <div class="event-tag vip">VIP Only</div>
+      <a href="#reservations" class="event-btn">Request Access</a>
+    </div>
+    <div class="event-row" data-reveal>
+      <div><div class="event-day">5</div><div class="event-month">Jul</div></div>
+      <div><div class="event-name">Industry Fridays — Press &amp; Media Night</div><div class="event-meta">10:00 PM &nbsp;·&nbsp; Industry Invite &nbsp;·&nbsp; Open Bar 10–11PM</div></div>
+      <div class="event-tag">Invite Only</div>
+      <a href="#reservations" class="event-btn">Request Invite</a>
+    </div>
+  </div>
+</section>
+
+<!-- Gallery -->
+<section id="gallery" style="padding-bottom:0">
+  <div class="gallery-intro" data-reveal>
+    <div class="section-label">Highlights</div>
+    <h2 class="section-title">Inside The <em>Red Room</em></h2>
+    <div class="divider"></div>
+  </div>
+  <div class="masonry" id="masonryGrid">
+    <!-- filled by JS -->
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <div class="lb-close" id="lbClose">&#215;</div>
+  <div class="lb-prev" id="lbPrev">&#8592;</div>
+  <img id="lbImg" src="" alt="" />
+  <div class="lb-next" id="lbNext">&#8594;</div>
+  <div class="lb-counter" id="lbCounter">1 / 9</div>
+</div>
+
+<!-- Parallax Feature -->
+<div id="feature">
+  <div class="feature-bg" id="featureBg"></div>
+  <div class="feature-content" data-reveal>
+    <div class="feature-quote">The night is not just a time — it is a feeling you carry home.</div>
+    <div class="feature-attr">The Red Room &mdash; Nairobi</div>
+  </div>
+</div>
+
+<!-- Reservations -->
+<section id="reservations">
+  <div class="res-wrap">
+    <div class="res-text">
+      <div class="section-label" data-reveal>VIP Experience</div>
+      <h2 class="section-title" data-reveal>Reserve Your<br /><em>Table</em></h2>
+      <div class="divider" data-reveal></div>
+      <p data-reveal>Skip the queue and secure your spot. Our table service packages give you and your crew the full Red Room treatment — from the moment you arrive until the last song plays.</p>
+      <p data-reveal>Each package includes a dedicated host, premium bottle selection, and priority access. All enquiries are responded to within 2 hours.</p>
+      <div class="packages">
+        <div class="pkg" data-reveal><div><div class="pkg-name">Standard Table</div><div class="pkg-desc">Up to 6 guests · 1 bottle included</div></div><div class="pkg-price">KES 15K</div></div>
+        <div class="pkg" data-reveal><div><div class="pkg-name">Premium Table</div><div class="pkg-desc">Up to 8 guests · 2 bottles + mixers</div></div><div class="pkg-price">KES 30K</div></div>
+        <div class="pkg" data-reveal><div><div class="pkg-name">The Red Room Suite</div><div class="pkg-desc">Up to 12 guests · Full service + host</div></div><div class="pkg-price">KES 60K+</div></div>
+      </div>
+    </div>
+    <div class="res-form" data-reveal>
+      <div class="form-title">Make a Reservation</div>
+      <div class="form-sub">All inquiries answered within 2 hours</div>
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" placeholder="John" /></div>
+        <div class="form-group"><label>Last Name</label><input type="text" placeholder="Doe" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input type="tel" placeholder="+254 7XX XXX XXX" /></div>
+        <div class="form-group"><label>Email</label><input type="email" placeholder="your@email.com" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" /></div>
+        <div class="form-group"><label>Party Size</label>
+          <select><option>Select guests</option><option>2–3</option><option>4–6</option><option>7–10</option><option>10+</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Package</label>
+        <select><option>Choose a package</option><option>Standard — KES 15,000</option><option>Premium — KES 30,000</option><option>Suite — KES 60,000+</option></select>
+      </div>
+      <div class="form-group"><label>Special Requests</label><textarea placeholder="Occasion, bottle preferences, dietary needs..."></textarea></div>
+      <button class="form-submit" id="formSubmit">Send Reservation Request</button>
+    </div>
+  </div>
+</section>
+
+<!-- Dress Code -->
+<section id="dresscode">
+  <div data-reveal style="text-align:center">
+    <div class="section-label" style="justify-content:center">House Rules</div>
+    <h2 class="section-title" style="text-align:center">Dress <em>Code</em></h2>
+    <div class="divider" style="margin:24px auto 64px"></div>
+  </div>
+  <div class="dress-grid">
+    <div class="dress-card" data-reveal><div class="dress-icon">👔</div><div class="dress-title">Smart Attire</div><div class="dress-desc">Dress to impress. Smart casual and above is our standard. We celebrate those who dress with intention and confidence.</div></div>
+    <div class="dress-card" data-reveal><div class="dress-icon">🚫</div><div class="dress-title">What to Avoid</div><div class="dress-desc">Sportswear, flip flops, caps, and torn clothing are not permitted. Management reserves the right of admission.</div></div>
+    <div class="dress-card" data-reveal><div class="dress-icon">🔞</div><div class="dress-title">Age Requirement</div><div class="dress-desc">The Red Room is strictly 21+. Valid government-issued photo ID required for entry. No exceptions.</div></div>
+    <div class="dress-card" data-reveal><div class="dress-icon">⏰</div><div class="dress-title">Opening Hours</div><div class="dress-desc">Friday &amp; Saturday: 9PM – 5AM<br />Thursdays: 10PM – 3AM<br />Special events: as advertised</div></div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section id="testimonials">
+  <div data-reveal style="text-align:center;margin-bottom:64px">
+    <div class="section-label" style="justify-content:center">The Verdict</div>
+    <h2 class="section-title" style="text-align:center">What Our <em>Guests Say</em></h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial" data-reveal><div class="stars">★★★★★</div><div class="testimonial-text">"The Red Room is in a league of its own. The energy from the moment you walk in is unreal. The DJ read the room perfectly and the cocktails were next level. Already booked for next week."</div><div style="display:flex;align-items:center;gap:14px"><div class="author-avatar">A</div><div><div class="author-name">Amara K.</div><div class="author-title">Regular Guest · Westlands</div></div></div></div>
+    <div class="testimonial" data-reveal><div class="stars">★★★★★</div><div class="testimonial-text">"Did my birthday here and honestly it exceeded every expectation. The VIP table service was flawless — our host was attentive all night. The performers brought the whole room to life. Iconic night."</div><div style="display:flex;align-items:center;gap:14px"><div class="author-avatar">D</div><div><div class="author-name">David M.</div><div class="author-title">Birthday Event · CBD</div></div></div></div>
+    <div class="testimonial" data-reveal><div class="stars">★★★★★</div><div class="testimonial-text">"Finally a spot in Nairobi that feels like it belongs on the world stage. The ambiance, the sound system, the crowd — everything is curated. This is what nightlife is supposed to feel like."</div><div style="display:flex;align-items:center;gap:14px"><div class="author-avatar">N</div><div><div class="author-name">Neema W.</div><div class="author-title">First-time Guest · Karen</div></div></div></div>
+  </div>
+</section>
+
+<!-- Info -->
+<div id="info">
+  <div class="info-cell" data-reveal><div class="info-icon">📍</div><div><div class="info-label">Location</div><div class="info-value">The Red Room, Nairobi</div><div class="info-sub">Westlands · Nairobi, Kenya</div></div></div>
+  <div class="info-cell" data-reveal><div class="info-icon">🕙</div><div><div class="info-label">Opening Hours</div><div class="info-value">Thu–Sat: 9PM – 5AM</div><div class="info-sub">Private events by arrangement</div></div></div>
+  <div class="info-cell" data-reveal><div class="info-icon">📞</div><div><div class="info-label">Reservations</div><div class="info-value">+254 700 000 000</div><div class="info-sub">WhatsApp · 9AM–6PM daily</div></div></div>
+  <div class="info-cell" data-reveal><div class="info-icon">📧</div><div><div class="info-label">Email</div><div class="info-value" style="font-size:.82rem">reservations@theredroom.co.ke</div><div class="info-sub">Response within 2 hours</div></div></div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-logo">The <strong>Red</strong> Room</div>
+      <p>Nairobi's most electric nightlife destination. Where the night is always alive and the energy never dies.</p>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/theredroom_nbo/" target="_blank" class="soc-link">IG</a>
+        <a href="#" class="soc-link">TT</a>
+        <a href="#" class="soc-link">FB</a>
+        <a href="#" class="soc-link">X</a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><ul><li><a href="#about">About</a></li><li><a href="#events">Events</a></li><li><a href="#gallery">Gallery</a></li><li><a href="#reservations">Reservations</a></li></ul></div>
+    <div class="footer-col"><h4>Services</h4><ul><li><a href="#">VIP Tables</a></li><li><a href="#">Private Events</a></li><li><a href="#">Corporate Nights</a></li><li><a href="#">Brand Activations</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">+254 700 000 000</a></li><li><a href="#">reservations@theredroom.co.ke</a></li><li><a href="#">Westlands, Nairobi</a></li><li><a href="#">Get Directions</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 The Red Room Nairobi. All rights reserved.</p>
+    <p>Privacy Policy &nbsp;·&nbsp; Terms of Entry &nbsp;·&nbsp; Dress Code</p>
+  </div>
+</footer>
+
+<script>
+/* ─── LENIS SMOOTH SCROLL ─── */
+const lenis = new Lenis({ duration: 1.3, easing: t => Math.min(1, 1.001 - Math.pow(2, -10*t)) });
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add(time => lenis.raf(time * 1000));
+gsap.ticker.lagSmoothing(0);
+
+/* ─── CURSOR ─── */
+const cursorDot  = document.getElementById('cursor-dot');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursorDot.style.left = mx + 'px'; cursorDot.style.top = my + 'px'; });
+(function animCursor(){
+  rx += (mx - rx) * .13;
+  ry += (my - ry) * .13;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top  = ry + 'px';
+  requestAnimationFrame(animCursor);
+})();
+
+/* ─── LOADER ─── */
+const loaderBar   = document.getElementById('loaderBar');
+const loaderCount = document.getElementById('loaderCount');
+let progress = 0;
+const loaderInterval = setInterval(() => {
+  progress += Math.random() * 18;
+  if (progress >= 100) { progress = 100; clearInterval(loaderInterval); finishLoader(); }
+  loaderBar.style.width = progress + '%';
+  loaderCount.textContent = Math.floor(progress) + '%';
+}, 80);
+
+function finishLoader() {
+  const loader = document.getElementById('loader');
+  gsap.to(loader, { opacity: 0, duration: .7, delay: .3, ease: 'power2.inOut', onComplete: () => {
+    loader.style.display = 'none';
+    initHero();
+  }});
+}
+
+/* ─── HERO INTRO ANIMATION ─── */
+function initHero() {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  // Nav
+  tl.to('.nav-logo', { opacity: 1, duration: .8 }, 0.1)
+    .to('.nav-links', { opacity: 1, duration: .8 }, 0.2);
+
+  // Eyebrow line + text
+  tl.to('#eyebrowLine', { width: 48, duration: .7 }, 0.4)
+    .to('#eyebrowText', { y: 0, duration: .7 }, 0.55);
+
+  // Title words
+  gsap.utils.toArray('#heroTitle .word span').forEach((el, i) => {
+    tl.to(el, { y: '0%', duration: .9, ease: 'power4.out' }, 0.5 + i * 0.12);
+  });
+
+  // Body + actions
+  tl.to('#heroBody span', { y: '0%', duration: .8 }, 0.9)
+    .to('#heroActions', { opacity: 1, y: 0, duration: .7 }, 1.0)
+    .to('#heroScroll',  { opacity: 1, duration: .6 }, 1.2);
+}
+
+/* ─── HERO SLIDESHOW ─── */
+const slides = document.querySelectorAll('.hero-slide');
+const slideNumEl   = document.getElementById('slideNum');
+const slideProg    = document.getElementById('slideProgress');
+let curSlide = 0, slideTimer;
+
+function goToSlide(n) {
+  slides[curSlide].classList.remove('active');
+  curSlide = (n + slides.length) % slides.length;
+  slides[curSlide].classList.add('active');
+  slideNumEl.textContent = String(curSlide + 1).padStart(2, '0');
+  gsap.fromTo(slideProg, { width: '0%' }, { width: '100%', duration: 5, ease: 'none' });
+}
+
+function startSlider() {
+  gsap.fromTo(slideProg, { width: '0%' }, { width: '100%', duration: 5, ease: 'none' });
+  slideTimer = setInterval(() => goToSlide(curSlide + 1), 5000);
+}
+
+// Only start after loader
+setTimeout(startSlider, 1500);
+
+/* ─── NAV SCROLL ─── */
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
+}, { passive: true });
+
+/* ─── HAMBURGER ─── */
+const hamburger = document.getElementById('hamburger');
+const navLinks  = document.getElementById('navLinks');
+hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+/* ─── GALLERY BUILD + LIGHTBOX ─── */
+const galleryImages = [
+  'images/rr1.jpg',
+  'images/rr2.jpg',
+  'images/rr3.jpg',
+  'images/rr4.jpg',
+  'images/rr5.jpg',
+  'images/rr6.jpg',
+  'images/rr7.jpg',
+  'images/rr8.jpg',
+  'images/rr9.jpg'
+];
+
+const grid = document.getElementById('masonryGrid');
+galleryImages.forEach((src, i) => {
+  const item = document.createElement('div');
+  item.className = 'masonry-item';
+  item.innerHTML = `<img src="${src}" alt="Red Room ${i+1}" loading="lazy" /><div class="masonry-item-overlay"><span class="masonry-item-num">0${i+1}</span></div>`;
+  item.addEventListener('click', () => openLightbox(i));
+  grid.appendChild(item);
+});
+
+// Lightbox
+const lightbox  = document.getElementById('lightbox');
+const lbImg     = document.getElementById('lbImg');
+const lbCounter = document.getElementById('lbCounter');
+let lbIndex = 0;
+
+function openLightbox(i) {
+  lbIndex = i;
+  lbImg.src = galleryImages[i];
+  lbCounter.textContent = `${i+1} / ${galleryImages.length}`;
+  lightbox.classList.add('open');
+  lenis.stop();
+}
+function closeLightbox() { lightbox.classList.remove('open'); lenis.start(); }
+function lbGo(dir) {
+  lbIndex = (lbIndex + dir + galleryImages.length) % galleryImages.length;
+  gsap.to(lbImg, { opacity: 0, x: dir * -30, duration: .2, onComplete: () => {
+    lbImg.src = galleryImages[lbIndex];
+    lbCounter.textContent = `${lbIndex+1} / ${galleryImages.length}`;
+    gsap.fromTo(lbImg, { opacity: 0, x: dir * 30 }, { opacity: 1, x: 0, duration: .3 });
+  }});
+}
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => lbGo(-1));
+document.getElementById('lbNext').addEventListener('click', () => lbGo(1));
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft')  lbGo(-1);
+  if (e.key === 'ArrowRight') lbGo(1);
+});
+
+/* ─── GSAP SCROLL ANIMATIONS ─── */
+gsap.registerPlugin(ScrollTrigger);
+
+// Generic reveal
+gsap.utils.toArray('[data-reveal]').forEach(el => {
+  gsap.from(el, {
+    y: 40, opacity: 0, duration: 1, ease: 'power3.out',
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+  });
+});
+
+// Cards stagger
+gsap.utils.toArray('[data-card]').forEach((card, i) => {
+  gsap.from(card, {
+    y: 50, opacity: 0, duration: .9, ease: 'power3.out',
+    scrollTrigger: { trigger: card, start: 'top 90%' },
+    delay: (i % 3) * 0.12
+  });
+});
+
+// Masonry items
+ScrollTrigger.batch('.masonry-item', {
+  start: 'top 92%',
+  onEnter: batch => gsap.from(batch, { opacity: 0, y: 30, stagger: .06, duration: .8, ease: 'power3.out' })
+});
+
+// About parallax images
+gsap.to('#aboutMain', {
+  yPercent: -12,
+  scrollTrigger: { trigger: '#about', start: 'top bottom', end: 'bottom top', scrub: 1.5 }
+});
+gsap.to('#aboutAccent', {
+  yPercent: 16,
+  scrollTrigger: { trigger: '#about', start: 'top bottom', end: 'bottom top', scrub: 2 }
+});
+
+// Feature section parallax
+gsap.to('#featureBg', {
+  yPercent: 25,
+  scrollTrigger: { trigger: '#feature', start: 'top bottom', end: 'bottom top', scrub: 1 }
+});
+
+// Stat counters
+gsap.utils.toArray('[data-count]').forEach(el => {
+  const target = parseInt(el.dataset.count);
+  ScrollTrigger.create({
+    trigger: el, start: 'top 85%',
+    onEnter: () => gsap.to({ val: 0 }, {
+      val: target, duration: 1.8, ease: 'power2.out',
+      onUpdate: function() { el.textContent = Math.floor(this.targets()[0].val); }
+    })
+  });
+});
+
+// Event rows stagger
+gsap.utils.toArray('.event-row').forEach((row, i) => {
+  gsap.from(row, {
+    x: -30, opacity: 0, duration: .8, ease: 'power3.out',
+    scrollTrigger: { trigger: row, start: 'top 90%' },
+    delay: i * 0.08
+  });
+});
+
+// Package items
+gsap.utils.toArray('.pkg').forEach((pkg, i) => {
+  gsap.from(pkg, {
+    x: 30, opacity: 0, duration: .7, ease: 'power3.out',
+    scrollTrigger: { trigger: pkg, start: 'top 92%' },
+    delay: i * 0.1
+  });
+});
+
+// Dress code cards
+gsap.utils.toArray('.dress-card').forEach((card, i) => {
+  gsap.from(card, {
+    y: 40, opacity: 0, duration: .8, ease: 'power3.out',
+    scrollTrigger: { trigger: card, start: 'top 90%' },
+    delay: i * 0.1
+  });
+});
+
+// Testimonials
+gsap.utils.toArray('.testimonial').forEach((t, i) => {
+  gsap.from(t, {
+    y: 40, opacity: 0, duration: .9, ease: 'power3.out',
+    scrollTrigger: { trigger: t, start: 'top 88%' },
+    delay: i * 0.15
+  });
+});
+
+// Info cells
+gsap.utils.toArray('.info-cell').forEach((cell, i) => {
+  gsap.from(cell, {
+    y: 24, opacity: 0, duration: .7, ease: 'power3.out',
+    scrollTrigger: { trigger: cell, start: 'top 90%' },
+    delay: i * 0.1
+  });
+});
+
+// Feature quote
+gsap.from('.feature-quote', {
+  y: 30, opacity: 0, duration: 1, ease: 'power3.out',
+  scrollTrigger: { trigger: '#feature', start: 'top 70%' }
+});
+
+/* ─── FORM SUBMIT ─── */
+document.getElementById('formSubmit').addEventListener('click', function(e) {
+  e.preventDefault();
+  const orig = this.textContent;
+  this.textContent = 'Request Sent ✓';
+  this.style.background = '#0d6b0d';
+  gsap.fromTo(this, { scale: .97 }, { scale: 1, duration: .3, ease: 'back.out' });
+  setTimeout(() => { this.textContent = orig; this.style.background = ''; }, 3500);
+});
+
+/* ─── MAGNETIC BUTTONS ─── */
+document.querySelectorAll('.btn-primary, .btn-outline, .event-btn, .form-submit').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top  + r.height / 2);
+    gsap.to(btn, { x: dx * .18, y: dy * .18, duration: .4, ease: 'power2.out' });
+  });
+  btn.addEventListener('mouseleave', () => {
+    gsap.to(btn, { x: 0, y: 0, duration: .5, ease: 'elastic.out(1,.5)' });
+  });
+});
+
+/* ══════════════════════════════════════════════
+   EXTENDED JAVASCRIPT — INTERACTIVE FEATURES
+══════════════════════════════════════════════ */
+
+/* ─── 0. VIDEO FALLBACK ─── */
+const heroVideo  = document.getElementById('heroVideo');
+const heroSlides = document.getElementById('heroSlides');
+
+// If video loads fine, keep slides hidden
+heroVideo.addEventListener('canplaythrough', () => {
+  heroSlides.style.opacity = '0';
+  heroSlides.style.pointerEvents = 'none';
+});
+
+// If video errors, fade slides in instead
+heroVideo.addEventListener('error', () => {
+  heroVideo.style.display = 'none';
+  heroSlides.style.opacity = '1';
+  startSlider();
+});
+
+// Also fall back if video stalls for >4s
+heroVideo.addEventListener('stalled', () => {
+  setTimeout(() => {
+    if (heroVideo.paused || heroVideo.readyState < 3) {
+      heroVideo.style.display = 'none';
+      heroSlides.style.opacity = '1';
+      startSlider();
+    }
+  }, 4000);
+});
+
+/* ─── 1. SCROLL PROGRESS BAR ─── */
+const progressBar = document.getElementById('scrollProgress');
+window.addEventListener('scroll', () => {
+  const total  = document.documentElement.scrollHeight - window.innerHeight;
+  const pct    = (window.scrollY / total) * 100;
+  progressBar.style.width = pct + '%';
+}, { passive: true });
+
+/* ─── 2. COUNTDOWN TIMER TO NEXT EVENT ─── */
+function updateCountdown() {
+  const next  = new Date('2026-06-14T22:00:00+03:00'); // Red Room Fridays
+  const now   = new Date();
+  const diff  = next - now;
+  if (diff <= 0) {
+    document.getElementById('cdDays').textContent  = '00';
+    document.getElementById('cdHours').textContent = '00';
+    document.getElementById('cdMins').textContent  = '00';
+    document.getElementById('cdSecs').textContent  = '00';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000)  / 60000);
+  const s = Math.floor((diff % 60000)    / 1000);
+  document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
+  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
+  document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* ─── 3. LIVE NAIROBI CLOCK ─── */
+function updateClock() {
+  const now = new Date().toLocaleTimeString('en-KE', {
+    timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  const el = document.getElementById('nairobiclock');
+  if (el) el.textContent = now + ' EAT';
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ─── 4. ACTIVE NAV LINK ON SCROLL ─── */
+const navSections = ['about','events','gallery','reservations'];
+const navAnchors  = document.querySelectorAll('.nav-links a[href^="#"]');
+
+const navObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navAnchors.forEach(a => a.classList.remove('nav-active'));
+      const match = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+      if (match) match.classList.add('nav-active');
+    }
+  });
+}, { threshold: 0.35 });
+
+navSections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) navObserver.observe(el);
+});
+
+/* ─── 5. FORM VALIDATION ─── */
+const formInputs = document.querySelectorAll('.res-form input, .res-form select, .res-form textarea');
+
+formInputs.forEach(input => {
+  input.addEventListener('blur', () => validateField(input));
+  input.addEventListener('input', () => clearError(input));
+});
+
+function validateField(field) {
+  const wrap = field.closest('.form-group');
+  clearError(field);
+  let msg = '';
+  if (!field.value.trim() && field.type !== 'select-one') {
+    msg = 'This field is required';
+  } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)) {
+    msg = 'Enter a valid email address';
+  } else if (field.type === 'tel' && field.value.trim() && !/^\+?[\d\s\-]{7,}$/.test(field.value)) {
+    msg = 'Enter a valid phone number';
+  }
+  if (msg) {
+    field.style.borderColor = 'rgba(200,16,46,.7)';
+    const err = document.createElement('span');
+    err.className = 'field-error';
+    err.textContent = msg;
+    wrap.appendChild(err);
+    gsap.fromTo(field, { x: -6 }, { x: 0, duration: .4, ease: 'elastic.out(1,.3)' });
+    return false;
+  }
+  field.style.borderColor = 'rgba(40,160,40,.5)';
+  return true;
+}
+
+function clearError(field) {
+  field.style.borderColor = '';
+  const wrap = field.closest('.form-group');
+  const err  = wrap && wrap.querySelector('.field-error');
+  if (err) err.remove();
+}
+
+document.getElementById('formSubmit').addEventListener('click', function(e) {
+  e.preventDefault();
+  let valid = true;
+  formInputs.forEach(f => { if (!validateField(f)) valid = false; });
+  if (!valid) {
+    gsap.fromTo(this, { x: -8 }, { x: 0, duration: .5, ease: 'elastic.out(1,.3)' });
+    return;
+  }
+  const orig = this.textContent;
+  this.textContent = 'Sending…';
+  this.disabled = true;
+  setTimeout(() => {
+    this.textContent = 'Request Sent ✓';
+    this.style.background = '#0d6b0d';
+    gsap.fromTo(this, { scale: .96 }, { scale: 1, duration: .4, ease: 'back.out' });
+    setTimeout(() => {
+      this.textContent = orig;
+      this.style.background = '';
+      this.disabled = false;
+      formInputs.forEach(f => { f.value = ''; clearError(f); });
+    }, 3500);
+  }, 1200);
+});
+
+/* ─── 6. RIPPLE EFFECT ON CLICK ─── */
+document.querySelectorAll('.btn-primary, .event-btn:not(.outline), .form-submit').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const r = this.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-wave';
+    ripple.style.left   = (e.clientX - r.left) + 'px';
+    ripple.style.top    = (e.clientY - r.top)  + 'px';
+    this.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+  });
+});
+
+/* ─── 7. 3D TILT ON EXPERIENCE CARDS ─── */
+document.querySelectorAll('.exp-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r  = card.getBoundingClientRect();
+    const cx = r.left + r.width  / 2;
+    const cy = r.top  + r.height / 2;
+    const rx = ((e.clientY - cy) / (r.height / 2)) * -8;
+    const ry = ((e.clientX - cx) / (r.width  / 2)) *  8;
+    gsap.to(card, { rotateX: rx, rotateY: ry, transformPerspective: 800, duration: .35, ease: 'power2.out' });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotateX: 0, rotateY: 0, duration: .6, ease: 'elastic.out(1,.4)' });
+  });
+});
+
+/* ─── 8. TOUCH SWIPE FOR HERO SLIDES ─── */
+let heroTouchX = null;
+document.getElementById('heroSlides').addEventListener('touchstart', e => {
+  heroTouchX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('heroSlides').addEventListener('touchend', e => {
+  if (heroTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - heroTouchX;
+  if (Math.abs(dx) > 50) goToSlide(curSlide + (dx < 0 ? 1 : -1));
+  heroTouchX = null;
+}, { passive: true });
+
+/* ─── 9. TOUCH SWIPE FOR LIGHTBOX ─── */
+let lbTouchX = null;
+document.getElementById('lightbox').addEventListener('touchstart', e => {
+  lbTouchX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  if (lbTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 40) lbGo(dx < 0 ? 1 : -1);
+  lbTouchX = null;
+}, { passive: true });
+
+/* ─── 10. SCROLL-TO-TOP BUTTON ─── */
+const scrollTopBtn = document.getElementById('scrollTopBtn');
+window.addEventListener('scroll', () => {
+  const visible = window.scrollY > 600;
+  scrollTopBtn.style.opacity  = visible ? '1' : '0';
+  scrollTopBtn.style.transform = visible ? 'translateY(0)' : 'translateY(20px)';
+  scrollTopBtn.style.pointerEvents = visible ? 'auto' : 'none';
+}, { passive: true });
+scrollTopBtn.addEventListener('click', () => lenis.scrollTo(0, { duration: 1.6 }));
+
+/* ─── 11. SOUND WAVE VISUALIZER (hero bars) ─── */
+const waveBars = document.querySelectorAll('.wave-bar');
+function animateWave() {
+  waveBars.forEach((bar, i) => {
+    const h = 8 + Math.sin(Date.now() * 0.003 + i * 0.7) * 14 + Math.random() * 6;
+    bar.style.height = Math.max(4, h) + 'px';
+  });
+  requestAnimationFrame(animateWave);
+}
+animateWave();
+
+/* ─── 12. TYPEWRITER EFFECT (hero eyebrow cycles) ─── */
+const phrases = [
+  "Nairobi's Premier Nightlife Experience",
+  "Live Music · Cocktails · Vibes",
+  "Every Friday & Saturday Night",
+  "Where Nairobi Comes Alive"
+];
+let phraseIdx = 0, charIdx = 0, deleting = false;
+const typeTarget = document.getElementById('eyebrowText');
+
+function typeWriter() {
+  const current = phrases[phraseIdx];
+  if (!deleting) {
+    charIdx++;
+    typeTarget.textContent = current.slice(0, charIdx);
+    if (charIdx === current.length) {
+      deleting = true;
+      setTimeout(typeWriter, 2800);
+      return;
+    }
+    setTimeout(typeWriter, 55);
+  } else {
+    charIdx--;
+    typeTarget.textContent = current.slice(0, charIdx);
+    if (charIdx === 0) {
+      deleting = false;
+      phraseIdx = (phraseIdx + 1) % phrases.length;
+      setTimeout(typeWriter, 400);
+      return;
+    }
+    setTimeout(typeWriter, 28);
+  }
+}
+// Start after hero intro
+setTimeout(typeWriter, 3500);
+
+/* ─── 13. PARALLAX CURSOR DEPTH ON HERO ─── */
+document.getElementById('hero').addEventListener('mousemove', e => {
+  const cx = window.innerWidth  / 2;
+  const cy = window.innerHeight / 2;
+  const dx = (e.clientX - cx) / cx;
+  const dy = (e.clientY - cy) / cy;
+  gsap.to('#heroTitle', { x: dx * 12, y: dy * 6, duration: .9, ease: 'power2.out' });
+  gsap.to('.hero-eyebrow', { x: dx * 6, y: dy * 3, duration: 1, ease: 'power2.out' });
+  gsap.to('.hero-body', { x: dx * 4, y: dy * 2, duration: 1.1, ease: 'power2.out' });
+});
+document.getElementById('hero').addEventListener('mouseleave', () => {
+  gsap.to(['#heroTitle', '.hero-eyebrow', '.hero-body'], { x: 0, y: 0, duration: .8, ease: 'power2.out' });
+});
+
+/* ─── 14. GALLERY HOVER TILT ─── */
+document.querySelectorAll('.masonry-item').forEach(item => {
+  item.addEventListener('mousemove', e => {
+    const r  = item.getBoundingClientRect();
+    const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -5;
+    const ry = ((e.clientX - r.left - r.width /2) / (r.width /2)) *  5;
+    gsap.to(item, { rotateX: rx, rotateY: ry, transformPerspective: 600, scale: 1.02, duration: .3, ease: 'power2.out' });
+  });
+  item.addEventListener('mouseleave', () => {
+    gsap.to(item, { rotateX: 0, rotateY: 0, scale: 1, duration: .5, ease: 'elastic.out(1,.5)' });
+  });
+});
+
+/* ─── 15. AMBIENT GLOW FOLLOWS CURSOR (hero only) ─── */
+const heroGlow = document.getElementById('heroGlow');
+document.getElementById('hero').addEventListener('mousemove', e => {
+  heroGlow.style.left = e.clientX + 'px';
+  heroGlow.style.top  = e.clientY + 'px';
+});
+
+</script>
+
+<!-- ── EXTRA STYLES FOR NEW JS FEATURES ── -->
+<style>
+  /* Scroll progress bar */
+  #scrollProgress {
+    position: fixed; top: 0; left: 0; z-index: 10000;
+    height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--crimson), var(--gold));
+    pointer-events: none; transition: width .1s linear;
+  }
+
+  /* Countdown widget */
+  #countdown {
+    position: absolute; bottom: 40px; right: 50%; transform: translateX(50%);
+    z-index: 4; text-align: center;
+    display: none; /* shown after hero loads */
+  }
+  @media (min-width: 960px) { #countdown { right: 60px; transform: none; display: block; } }
+  .cd-label { font-size: .6rem; letter-spacing: .34em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .cd-boxes { display: flex; gap: 8px; }
+  .cd-box { text-align: center; padding: 8px 12px; background: rgba(245,240,235,.04); border: 1px solid rgba(200,16,46,.18); min-width: 48px; }
+  .cd-num { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--crimson); line-height: 1; display: block; }
+  .cd-unit { font-size: .55rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-top: 2px; display: block; }
+
+  /* Nairobi clock in nav */
+  #nairobiclock {
+    font-size: .66rem; letter-spacing: .18em; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    display: none;
+  }
+  @media (min-width: 1100px) { #nairobiclock { display: block; } }
+
+  /* Active nav link */
+  .nav-links a.nav-active { color: var(--white) !important; }
+  .nav-links a.nav-active::after { transform: scaleX(1) !important; transform-origin: left !important; }
+
+  /* Field error */
+  .field-error { font-size: .66rem; color: var(--crimson); letter-spacing: .08em; margin-top: 4px; display: block; }
+
+  /* Ripple wave */
+  .ripple-wave {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,.22); pointer-events: none;
+    width: 6px; height: 6px; margin: -3px 0 0 -3px;
+    animation: rippleAnim .65s ease-out forwards;
+  }
+  @keyframes rippleAnim {
+    to { width: 200px; height: 200px; margin: -100px 0 0 -100px; opacity: 0; }
+  }
+
+  /* Sound wave bars */
+  .wave-bars {
+    position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
+    z-index: 4; display: flex; align-items: flex-end; gap: 3px;
+    height: 28px;
+  }
+  .wave-bar {
+    width: 3px; background: var(--crimson); border-radius: 2px 2px 0 0;
+    opacity: .65; transition: height .08s ease;
+  }
+
+  /* Scroll-to-top button */
+  #scrollTopBtn {
+    position: fixed; bottom: 36px; right: 36px; z-index: 888;
+    width: 44px; height: 44px;
+    background: var(--crimson); border: none; cursor: none;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--white); font-size: 1.2rem;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity .35s, transform .35s, background .2s;
+    clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+  }
+  #scrollTopBtn:hover { background: #a8001f; }
+
+  /* Hero ambient glow */
+  #heroGlow {
+    position: absolute; z-index: 1; pointer-events: none;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,16,46,.18) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: left .15s ease, top .15s ease;
+    mix-blend-mode: screen;
+  }
+</style>
+
+<!-- ── NEW HTML ELEMENTS ── -->
+<!-- Scroll progress bar -->
+<div id="scrollProgress"></div>
+
+<!-- Scroll-to-top -->
+<button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
+
+<script>
+/* Inject clock into nav & countdown + wave bars + glow into hero */
+(function(){
+  // Clock → nav
+  const nav = document.getElementById('navbar');
+  const clockEl = document.createElement('span');
+  clockEl.id = 'nairobiclock';
+  clockEl.textContent = '';
+  // Insert between logo and nav links
+  nav.insertBefore(clockEl, document.getElementById('navLinks'));
+
+  // Countdown → hero
+  const hero = document.getElementById('hero');
+  const cd = document.createElement('div');
+  cd.id = 'countdown';
+  cd.innerHTML = `
+    <div class="cd-label">Next Event — Red Room Fridays</div>
+    <div class="cd-boxes">
+      <div class="cd-box"><span class="cd-num" id="cdDays">00</span><span class="cd-unit">Days</span></div>
+      <div class="cd-box"><span class="cd-num" id="cdHours">00</span><span class="cd-unit">Hrs</span></div>
+      <div class="cd-box"><span class="cd-num" id="cdMins">00</span><span class="cd-unit">Min</span></div>
+      <div class="cd-box"><span class="cd-num" id="cdSecs">00</span><span class="cd-unit">Sec</span></div>
+    </div>`;
+  hero.appendChild(cd);
+  gsap.from(cd, { opacity:0, y:16, duration:.8, delay:2 });
+
+  // Wave bars → hero
+  const wave = document.createElement('div');
+  wave.className = 'wave-bars';
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'wave-bar';
+    wave.appendChild(b);
+  }
+  hero.appendChild(wave);
+  gsap.from(wave, { opacity:0, duration:.8, delay:1.8 });
+
+  // Ambient glow → hero
+  const glow = document.createElement('div');
+  glow.id = 'heroGlow';
+  hero.appendChild(glow);
+})();
+</script>
+</body>
+</html>
